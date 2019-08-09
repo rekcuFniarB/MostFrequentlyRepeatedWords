@@ -8,10 +8,19 @@ const striptags = require('striptags');
 const sanitizeHtml = require('sanitize-html');
 
 /**
+ * POST request handler for url /parse-pages/.
+ * @param {object} request   request instance
+ * @param {object} response  response instance
+ */
+function parsePages(request, response) {
+    console.log(request.query);
+}
+
+/**
  * Fetch pages from supplied URLs
  * @param {array} list of URLs.
  */
-function getPage(URLs) {
+function getPages(URLs) {
     for (let i=0; i<URLs.length; i++) {
         let URL = new url.URL(URLs[i]);
         let www;
@@ -26,11 +35,9 @@ function getPage(URLs) {
         // Make request and pass response to 'parsePage' callback.
         const req = www.request(URL, parsePage);
         // console.log('__DEBUG__: after request'); // checking if above is async.
-    
-        // TODO 404 errors not handled
-    
+        
         req.on('error', (e) => {
-            console.error(`problem with request: ${e.message}`);
+            console.error(`Problem with request: ${e.message}`);
         });
         
         req.end();
@@ -42,6 +49,15 @@ function getPage(URLs) {
  * @param {https.ServerResponse} response  Response from server.
  */
 function parsePage(response) {
+    if (response.statusCode >= 400) {
+        console.error('__DEBUG__: response code:', response.statusCode);
+        // TODO
+    }
+    
+    //response.on('error', (e) => {
+            //console.error(`Response error: ${e.message}`);
+    //});
+    
     var page = '';
     response.on('data', (chunk) => {
         page += chunk;
@@ -53,4 +69,15 @@ function parsePage(response) {
     });
 }
 
-module.exports.getPage = getPage;
+/**
+ * Main page GET request handler for url '/'.
+ * @param {object} request   request instance
+ * @param {object} response  response instance
+ */
+function hello(request, response) {
+    response.send('Hello World!');
+}
+
+module.exports.getPage = getPages;
+module.exports.hello = hello;
+module.exports.parsePages = parsePages;
