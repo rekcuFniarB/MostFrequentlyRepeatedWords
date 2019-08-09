@@ -1,0 +1,19 @@
+{
+  "name": "most_frequently_repeated_words",
+  "version": "0.0.1",
+  "description": "Example REST API written in Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rekcufniarb/mostfrequentlyrepeatedwords.git"
+  },
+  "author": "retratserif@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rekcufniarb/mostfrequentlyrepeatedwords/issues"
+  },
+  "homepage": "https://github.com/rekcufniarb/mostfrequentlyrepeatedwords#readme"
+}
