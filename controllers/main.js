@@ -6,6 +6,26 @@ const https = require('https');
 const url = require('url');
 const striptags = require('striptags');
 const sanitizeHtml = require('sanitize-html');
+// Our custom http/https module wrapper:
+const httpRequest = require('httprequest');
+
+/**
+ * Error Response (JSON)
+ * @param {Object} request   Request object.
+ * @param {Object} response  Response object.
+ * @param {String} message   Error message.
+ * @param {Integer} code     HTTP error code.
+ * @return {Object}
+ */
+function errorResponse(request, response, message, code) {
+    if (typeof(code) === 'undefined')
+        code = 404;
+    response.status(code);
+    return response.json({
+        error: true,
+        errorMessage: message
+    });
+} // errorResponse()
 
 /**
  * POST request handler for url /parse-pages/.
@@ -13,61 +33,55 @@ const sanitizeHtml = require('sanitize-html');
  * @param {object} response  response instance
  */
 function parsePages(request, response) {
-    console.log(request.query);
+    if (typeof(request.query.url) === 'undefined') {
+        // No urls specified, send error response
+        return errorResponse(request, response, 'Bad request.', 400);
+    }
+    
+    let URLs;
+    if (typeof(request.query.url) === 'string')
+        // only one URL was supplied, make it an array
+        URLs = [request.query.url];
+    else
+        URLs = request.query.url;
+    
+    let promises = getPages(URLs);
+    
+    let pages = '';
+    Promise.all(promises).then(data => {
+        for (let i=0; i<data.length; i++) {
+            pages += parsePage(data[i]);
+        }
+        response.send(pages);
+    }).
+        catch((error) => {
+            errorResponse(request, response, error, 400);
+        });
 }
 
 /**
  * Fetch pages from supplied URLs
- * @param {array} list of URLs.
+ * @param {Array}  list of URLs.
+ * @return {Array} list of promises
  */
 function getPages(URLs) {
+    var promises = [];
+    // fetch each page and store promises in array
     for (let i=0; i<URLs.length; i++) {
-        let URL = new url.URL(URLs[i]);
-        let www;
-        // This is strange. No idea why Node uses different modules for https
-        if (URL.protocol == 'http:')
-            www = http;
-        else if (URL.protocol == 'https:')
-            www = https;
-        else
-            throw new Error(`Wrong protocol in URL ${URL}.`);
-        
-        // Make request and pass response to 'parsePage' callback.
-        const req = www.request(URL, parsePage);
-        // console.log('__DEBUG__: after request'); // checking if above is async.
-        
-        req.on('error', (e) => {
-            console.error(`Problem with request: ${e.message}`);
-        });
-        
-        req.end();
+        // fill array with promises
+        promises.push(httpRequest(URLs[i]));
     } // for()
+    return promises;
 } // getPage()
 
 /**
- * Parse page callback. Called from 'getPage()'.
- * @param {https.ServerResponse} response  Response from server.
+ * Parse page. At this time just strip tags and sanitizing.
+ * @param {String} page  Response from server.
+ * @return {String}
  */
-function parsePage(response) {
-    if (response.statusCode >= 400) {
-        console.error('__DEBUG__: response code:', response.statusCode);
-        // TODO
-    }
-    
-    //response.on('error', (e) => {
-            //console.error(`Response error: ${e.message}`);
-    //});
-    
-    var page = '';
-    response.on('data', (chunk) => {
-        page += chunk;
-    }).
-      on('end', () => {
-          // Sanitize (remove <sctipt>, <style> and other blocks) and strip html tags.
-          page = striptags(sanitizeHtml(page));
-          console.log(page);
-    });
-}
+function parsePage(page) {
+    return striptags(sanitizeHtml(page));
+} // parsePage()
 
 /**
  * Main page GET request handler for url '/'.
