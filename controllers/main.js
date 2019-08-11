@@ -2,13 +2,10 @@
 // API main controller
 
 const url = require('url');
-const striptags = require('striptags');
-const sanitizeHtml = require('sanitize-html');
 // My custom http/https module wrapper:
-const httpRequest = require('httprequest');
-// Importing 3rd party tokenizer and stemming functions:
-const natural = require('natural');
-
+const httpRequest = require('../lib/httprequest');
+// Importing my custom text processing module:
+const textprocess = require('../lib/textprocess');
 
 /**
  * Error Response (JSON)
@@ -48,11 +45,16 @@ function parsePages(request, response) {
     
     let promises = getPages(URLs);
     
-    let pages = '';
+    let pages = [];
+    let words;
     Promise.all(promises).then(data => {
         for (let i=0; i<data.length; i++) {
-            pages += parsePage(data[i]);
+            // this is a list containing stats of words for a page
+            words = textprocess.parsePage(data[i]);
+            // Get 3 most repeated words
+            words = words.slice(0,3);
         }
+        pages.push(words);
         response.send(pages);
     }).
         catch((error) => {
@@ -74,72 +76,6 @@ function getPages(URLs) {
     } // for()
     return promises;
 } // getPage()
-
-/**
- * Parse HTML page.
- * @param {String} html  Response from server.
- * @return {Array} List of stems and words occurence stats.
- */
-function parsePage(html) {
-    // Tokenizing input text
-    const text = striptags(sanitizeHtml(html));
-    const tokenizer = new natural.WordTokenizer();
-    const words = tokenizer.tokenize(text);
-    let stems = []; // contains list of [stem, count, [word, ...]]
-    for (let i=0; i<words.length; i++) {
-        if (words[i].length < 3)
-            // skip short words
-            continue;
-        
-        let stem = '';
-        // check if word is russian and use russian stemming
-        // or use english sttemming otherwise.
-        if (isRussian(words[i]))
-            stem = natural.PorterStemmerRu.stem(words[i]);
-        else
-            stem = natural.PorterStemmer.stem(words[i]);
-        
-        // search for this stem in stems stats
-        let index;
-        let search = stems.filter((item, ind) => {
-            if (item[0] == stem) {
-                index = ind;
-                return true;
-            }
-        });
-        
-        if (search.length == 0) {
-            // not found, create new stat for this stem
-            stems.push([stem, 1, [words[i]]]);
-        }
-        else {
-            // stem was already stored, just update stats
-            stems[index][1]++; // increasing word occurence counter
-            
-            // storing word
-            if (!stems[index][2].includes(words[i]))
-                stems[index][2].push(words[i]);
-        }
-    } // for()
-    
-    // sort stems list placing most repeated words to the top
-    stems = stems.sort((a, b) => {
-        return b[1] - a[1];
-    });
-    
-    return stems;
-} // parsePage()
-
-/**
- * Test if given string is in russian.
- * @param {String} input string
- * @return {Bool}
- */
-function isRussian(string) {
-    const cyr = /^[\s\u0410-\u0451]+$/;
-    return cyr.test(string);
-}
-
 
 /**
  * Main page GET request handler for url '/'.
