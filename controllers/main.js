@@ -45,17 +45,43 @@ function parsePages(request, response) {
     
     let promises = getPages(URLs);
     
-    let pages = [];
+    let rows = [];
     let words;
     Promise.all(promises).then(data => {
+        // Prepare data for template:
         for (let i=0; i<data.length; i++) {
             // this is a list containing stats of words for a page
-            words = textprocess.parsePage(data[i]);
+            words = textprocess.parsePage(data[i].content);
             // Get 3 most repeated words
             words = words.slice(0,3);
-        }
-        pages.push(words);
-        response.send(pages);
+            for (let j=0; j<words.length; j++) {
+                // Find shortest form of word
+                words[j] = textprocess.shortestWord(words[j][2]);
+            } // foreach word
+            
+            // Cut long urls.
+            let URL = data[i].URL;
+            if (URL.length > 64)
+                URL = URL.slice(0, 64) + '...'
+            
+            // add page URL
+            words.unshift(URL);
+            
+            // Add missing columns, we need exactly 4
+            if (words.length < 4)
+                words[3] = '';
+            
+            rows.push(words);
+        } // for each response
+        
+        // Now we should have such format to pass into template:
+        //     [
+        //       [url, word, word, word],
+        //       [url, word, word, word],
+        //       ...
+        //     ]
+        response.render('parse-page.pug', {title: 'Most repeating words', rows: rows});
+        //pug.renderFile(path, ?options, ?callback)
     }).
         catch((error) => {
             errorResponse(request, response, error, 400);
@@ -86,6 +112,6 @@ function hello(request, response) {
     response.send('Hello World!');
 }
 
-module.exports.getPage = getPages;
+
 module.exports.hello = hello;
 module.exports.parsePages = parsePages;

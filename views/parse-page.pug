@@ -1,0 +1,48 @@
+doctype html
+|
+|
+html
+  |
+  |
+  head
+    |
+    |
+    title #{title}
+    |
+    |
+    style(type='text/css')
+      |
+      |  td {
+      |      padding: 0.3em;
+      |  }
+      |  table {
+      |      border-spacing: 0;
+      |  }
+    |
+    |
+  |
+  |
+  body
+    |
+    |
+    h1 #{title}
+    |
+    |
+    table(border='1')
+      |
+      |
+      each row in rows
+        tr
+          |
+          |
+          each word in row
+            td= word
+        |
+        |
+      |
+      |
+  |
+  |
+|
+|
+//- Мда, темплейты курильщика, зря решил этот pug использовать o_O
