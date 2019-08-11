@@ -122,6 +122,11 @@ function parsePage(html) {
         }
     } // for()
     
+    // sort stems list placing most repeated words to the top
+    stems = stems.sort((a, b) => {
+        return b[1] - a[1];
+    });
+    
     return stems;
 } // parsePage()
 
