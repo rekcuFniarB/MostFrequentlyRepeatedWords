@@ -43,6 +43,10 @@ function parsePages(request, response) {
     else
         URLs = request.query.url;
     
+    let showcount = false;
+    if (typeof(request.query.showcount) !== 'undefined')
+        showcount = true;
+    
     let promises = getPages(URLs);
     
     let rows = [];
@@ -56,7 +60,11 @@ function parsePages(request, response) {
             words = words.slice(0,3);
             for (let j=0; j<words.length; j++) {
                 // Find shortest form of word
+                let count = words[j][1];
                 words[j] = textprocess.shortestWord(words[j][2]);
+                // add words count if requested
+                if (showcount)
+                    words[j] += ` (${count})`;
             } // foreach word
             
             // Cut long urls.
