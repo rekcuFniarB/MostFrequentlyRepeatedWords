@@ -52,10 +52,10 @@ curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com
 
 ### Примеры генерируемого PDF файла:
 
-![screenshot](https://i.imgur.com/TW2YEqz.png)
+![screenshot](https://i.imgur.com/RY3xHb2.png)
 
 С параметром `showcount`:
 
-![screenshot](https://i.imgur.com/jIdtLCm.png)
+![screenshot](https://i.imgur.com/qk6PwXZ.png)
 
 [Read in english](https://github.com/rekcuFniarB/MostFrequentlyRepeatedWords#readme)

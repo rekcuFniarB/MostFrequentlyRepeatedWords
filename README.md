@@ -52,10 +52,10 @@ curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com
 
 ### Exaple resulting PDF files:
 
-![screenshot](https://i.imgur.com/TW2YEqz.png)
+![screenshot](https://i.imgur.com/RY3xHb2.png)
 
 With `showcount` param:
 
-![screenshot](https://i.imgur.com/jIdtLCm.png)
+![screenshot](https://i.imgur.com/qk6PwXZ.png)
 
 [Read in russian](./README.RU.md#readme)
