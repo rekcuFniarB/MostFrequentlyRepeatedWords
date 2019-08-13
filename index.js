@@ -32,14 +32,14 @@ if (config.production)
 //// Express middlewares setup (copied from MDN)
 //app.use(logger('dev'));
 //app.use(express.json());
-//app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser());
 // Serve static files from './public' directory
 app.use(express.static(app.get('static_dir')));
 
 // Routing
-app.get('/', controller.hello);
-app.get('/api/parse-pages/', controller.parsePages);
+app.get('/', controller.frontPage);
+app.post('/api/wordstats/', controller.wordStats);
 
 app.listen(config.port, () => {
   console.error(`Listening on port ${config.port}!`);

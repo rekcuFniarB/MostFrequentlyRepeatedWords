@@ -6,6 +6,14 @@ const url = require('url');
 const httpRequest = require('../lib/httprequest');
 // Importing my custom text processing module:
 const textprocess = require('../lib/textprocess');
+// Importing HTML template renderer
+const pug = require('pug');
+const path = require('path');
+//Importing HTML to PDF converter tool
+const pdf = require('html-pdf');
+const md5 = require('md5');
+const fs = require('fs');
+
 
 /**
  * Error Response (JSON)
@@ -30,25 +38,85 @@ function errorResponse(request, response, message, code) {
  * @param {object} request   request instance
  * @param {object} response  response instance
  */
-function parsePages(request, response) {
-    if (typeof(request.query.url) === 'undefined') {
+function wordStats(request, response) {
+    if (typeof(request.body.url) === 'undefined') {
         // No urls specified, send error response
-        return errorResponse(request, response, 'Bad request.', 400);
+        return errorResponse(request, response, 'Bad request. No URL specified.', 400);
     }
     
     let URLs;
-    if (typeof(request.query.url) === 'string')
+    if (typeof(request.body.url) === 'string')
         // only one URL was supplied, make it an array
-        URLs = [request.query.url];
+        URLs = [request.body.url];
     else
-        URLs = request.query.url;
+        URLs = request.body.url;
     
+    // Checking some request params:
+    // Should we show words count
     let showcount = false;
-    if (typeof(request.query.showcount) !== 'undefined')
+    let wordCut = 16;
+    if (typeof(request.body.showcount) !== 'undefined') {
         showcount = true;
+        wordCut = 13;
+    }
     
+    // Font size
+    let fontSize = '7pt';
+    if(typeof(request.body.fontsize) !== 'undefined')
+        fontSize = request.body.fontsize;
+    
+    // should we skip cache?
+    let nocache = false;
+    if (typeof(request.body.nocache) !== 'undefined')
+        nocache = true;
+     
+    // should we redirect to PDF file instead of returning JSON
+    let redirect = false;
+    if (typeof(request.body.redirect) !== 'undefined')
+        redirect = true;
+    
+    // this will be used for PDF filename.
+    const reqID = md5(JSON.stringify(request.body));
+    // file, PDF will be written to
+    const pdfFile = path.join(request.app.get('static_dir'), request.app.get('pdfs_dir'), `${reqID}.pdf`);
+    // preparing AJAX JSON response
+    const jsresp = ({
+        pdf: path.join(request.app.get('static_url'), request.app.get('pdfs_dir'), `${reqID}.pdf`),
+        cached: false,
+        error: false
+    });
+    
+    // Check if PDF file exists and reuse already cached file.
+    let fileExists = false;
+    if (!nocache) {
+        // use cached if exists
+        fileExists = true;
+        try {
+            fs.statSync(pdfFile);
+            // file already exists, just return it
+            jsresp.cached = true;
+        } catch (e) {
+            // file not found
+            fileExists = false;
+        }
+    } else {
+        // Refresh cached file if "nocache" param in request.
+        fileExists = false;
+    }
+    
+    if (fileExists) {
+        // File already cached, skip parsing, just return existing file.
+        if (redirect)
+            // redirect to PDF file
+            return response.redirect(jsresp.pdf);
+        else
+            // return link to PDF in AJAX JSON response
+            return response.json(jsresp);
+    }
+    
+    // Parsing all urls asynchronously. getPages() returns array of
+    // promises for each URL.
     let promises = getPages(URLs);
-    
     let rows = [];
     let words;
     Promise.all(promises).then(data => {
@@ -62,15 +130,15 @@ function parsePages(request, response) {
                 // Find shortest form of word
                 let count = words[j][1];
                 words[j] = textprocess.shortestWord(words[j][2]);
+                // Cut long words
+                words[j] = textprocess.cutString(words[j], wordCut, true);
                 // add words count if requested
                 if (showcount)
                     words[j] += ` (${count})`;
             } // foreach word
             
             // Cut long urls.
-            let URL = data[i].URL;
-            if (URL.length > 64)
-                URL = URL.slice(0, 64) + '...'
+            let URL = textprocess.cutString(data[i].URL, 54, true);
             
             // add page URL
             words.unshift(URL);
@@ -88,16 +156,41 @@ function parsePages(request, response) {
         //       [url, word, word, word],
         //       ...
         //     ]
-        response.render('parse-page.pug', {title: 'Most repeating words', rows: rows});
-        //pug.renderFile(path, ?options, ?callback)
-    }).
+        const template = path.join(request.app.get('views'), 'parse-page.pug');
+        const html = pug.renderFile(template, {
+            title: 'Most repeating words',
+            rows: rows,
+            fontSize: fontSize
+        });
+        //response.send(html);
+        const pdfOpts = {
+            format: 'A4',
+            orientation: 'portrait',
+            border: '4mm'
+        };
+        
+        
+        pdf.create(html, pdfOpts).toFile(pdfFile, (error, result) => {
+            if (error) {
+                return errorResponse(request, response, error, 400);
+            }
+            if (redirect)
+                // redirect to PDF file
+                return response.redirect(jsresp.pdf);
+            else
+                // return link to PDF with AJAX JSON response
+                return response.json(jsresp);
+        }); // pdf.create()
+        
+    }). // promise.all.then
         catch((error) => {
-            errorResponse(request, response, error, 400);
+            return errorResponse(request, response, error, 400);
         });
 }
 
 /**
- * Fetch pages from supplied URLs
+ * Asynchronously fetch pages from supplied URLs
+ *  and return array of promises.
  * @param {Array}  list of URLs.
  * @return {Array} list of promises
  */
@@ -116,10 +209,10 @@ function getPages(URLs) {
  * @param {object} request   request instance
  * @param {object} response  response instance
  */
-function hello(request, response) {
-    response.send('Hello World!');
+function frontPage(request, response) {
+    response.send('See "README.md" for usage.');
 }
 
 
-module.exports.hello = hello;
-module.exports.parsePages = parsePages;
+module.exports.frontPage = frontPage;
+module.exports.wordStats = wordStats;
