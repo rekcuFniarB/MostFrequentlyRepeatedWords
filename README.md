@@ -15,7 +15,7 @@ To change default settings, copy `config.default.js` to `config.local.js` and ed
 Usage
 -----
 
-Start the service with command `npm run`.
+Start the service with command `npm start`.
 
 Requests should be made from AJAX to the URL `/api/wordstats/` using `POST` method in `application/x-www-form-urlencoded` format. 
 
