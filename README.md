@@ -52,4 +52,4 @@ With `showcount` param:
 
 ![screenshot](https://i.imgur.com/jIdtLCm.png)
 
-[Read in russian](./blob/master/README.RU.md#readme)
+[Read in russian](./README.RU.md#readme)
