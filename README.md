@@ -44,6 +44,12 @@ where:
 * pdf: relative PDF file path to download.
 * cached: `false` if PDF file was generated new and `true` if file was already cached.
 
+Example request using `curl`:
+
+```bash
+curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com/item?id=20685944' 'http://localhost:8080/api/wordstats/'
+```
+
 ### Exaple resulting PDF files:
 
 ![screenshot](https://i.imgur.com/TW2YEqz.png)

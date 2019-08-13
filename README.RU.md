@@ -44,6 +44,12 @@ MostFrequentlyRepeatedWords
 * pdf: относительная ссылка на сгенерированный PDF файл.
 * cached: `false`, если файл сгенерирован новый и `true`, если файл уже был в кеше.
 
+Пример отправки запроса с помощью `curl`:
+
+```bash
+curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com/item?id=20685944' 'http://localhost:8080/api/wordstats/'
+```
+
 ### Примеры генерируемого PDF файла:
 
 ![screenshot](https://i.imgur.com/TW2YEqz.png)
