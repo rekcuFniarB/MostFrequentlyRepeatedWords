@@ -50,6 +50,8 @@ MostFrequentlyRepeatedWords
 curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com/item?id=20685944' 'http://localhost:8080/api/wordstats/'
 ```
 
+Для запуска юнит тестов, выполнить команду `npm test`.
+
 ### Примеры генерируемого PDF файла:
 
 ![screenshot](https://i.imgur.com/RY3xHb2.png)

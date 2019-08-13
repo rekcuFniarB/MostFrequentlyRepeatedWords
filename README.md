@@ -50,6 +50,8 @@ Example request using `curl`:
 curl  --data url='https://habr.com/ru/' --data url='https://news.ycombinator.com/item?id=20685944' 'http://localhost:8080/api/wordstats/'
 ```
 
+To run unit tests, issue command `npm test`.
+
 ### Exaple resulting PDF files:
 
 ![screenshot](https://i.imgur.com/RY3xHb2.png)
