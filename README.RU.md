@@ -46,8 +46,10 @@ MostFrequentlyRepeatedWords
 
 ### Примеры генерируемого PDF файла:
 
-[!screenshot](https://i.imgur.com/TW2YEqz.png)
+![screenshot](https://i.imgur.com/TW2YEqz.png)
 
 С параметром `showcount`:
 
-[!screenshot](https://i.imgur.com/jIdtLCm.png)
+![screenshot](https://i.imgur.com/jIdtLCm.png)
+
+[Read in english](https://github.com/rekcuFniarB/MostFrequentlyRepeatedWords#readme)

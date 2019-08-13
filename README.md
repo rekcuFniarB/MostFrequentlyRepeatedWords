@@ -46,8 +46,10 @@ where:
 
 ### Exaple resulting PDF files:
 
-[!screenshot](https://i.imgur.com/TW2YEqz.png)
+![screenshot](https://i.imgur.com/TW2YEqz.png)
 
 With `showcount` param:
 
-[!screenshot](https://i.imgur.com/jIdtLCm.png)
+![screenshot](https://i.imgur.com/jIdtLCm.png)
+
+[Read in russian](./blob/master/README.RU.md#readme)
