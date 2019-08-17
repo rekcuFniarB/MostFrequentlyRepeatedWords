@@ -26,7 +26,7 @@ URLs should be passed in `url` params. Example request:
 Optional request params:
 
 * `showcount`: show words count.
-* `nocache`: ignore cache, generage new PDF file.
+* `nocache`: ignore cache, generate new PDF file.
 * `fontsize`: override font size. Default 7pt. Any CSS dimensions accepted.
 * `redirect`: Redirect to PDF file instead of JSON response.
 
